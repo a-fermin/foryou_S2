@@ -1,0 +1,1957 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>A Caixa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-darkest: #0b0b0e;
+            --bg-dark: #111317;
+            --bg-medium: #1a1d24;
+            --bg-light: #2a2f3a;
+            --text-light: #e7e9ee;
+            --text-muted: #9ca3af;
+            --accent-blue: #2563eb;
+            --accent-red: #ef4444;
+            --accent-purple: #8b5cf6;
+            --font-script: 'Caveat', cursive;
+            --font-sans: 'Inter', sans-serif;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+            --safe-top: env(safe-area-inset-top, 0px);
+            --tap-min: 44px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            -webkit-text-size-adjust: 100%;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto; }
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        body {
+            font-family: var(--font-sans);
+            background: var(--bg-darkest);
+            color: var(--text-light);
+            line-height: 1.7;
+            min-height: 100vh;
+            font-size: clamp(16px, 4vw, 18px);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            padding-bottom: var(--safe-bottom);
+        }
+
+        /* Entry Screen */
+        #entry-screen {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-darkest);
+            z-index: 1000;
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+            padding: 1.5rem;
+            padding-top: calc(1.5rem + var(--safe-top));
+        }
+
+        #entry-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .box-container {
+            cursor: pointer;
+            text-align: center;
+            padding: 2rem;
+            min-width: var(--tap-min);
+            min-height: var(--tap-min);
+            border-radius: 16px;
+            transition: transform 0.3s ease, background 0.3s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .box-container:hover,
+        .box-container:focus {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .box-container:focus-visible {
+            outline: 2px solid var(--accent-purple);
+            outline-offset: 4px;
+        }
+
+        .box-title {
+            font-family: var(--font-script);
+            font-size: clamp(2.5rem, 8vw, 4rem);
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-red));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .box-icon {
+            width: clamp(120px, 35vw, 150px);
+            height: clamp(120px, 35vw, 150px);
+            position: relative;
+            margin: 0 auto;
+            transition: transform 0.5s ease;
+        }
+
+        .box-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .box-lid {
+            transform-origin: bottom;
+            transition: transform 0.6s ease;
+        }
+
+        .box-container:hover .box-lid,
+        .box-container:focus .box-lid,
+        .box-container.opening .box-lid {
+            transform: rotateX(-120deg) translateY(-20px);
+        }
+
+        .box-container.opening .box-icon {
+            transform: scale(1.2);
+        }
+
+        .box-hint {
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+            font-size: clamp(0.9rem, 3vw, 1rem);
+        }
+
+        .open-btn {
+            margin-top: 1.5rem;
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            border: none;
+            color: var(--text-light);
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            min-height: var(--tap-min);
+            min-width: 140px;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .open-btn:hover,
+        .open-btn:focus {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .open-btn:focus-visible {
+            outline: 2px solid var(--text-light);
+            outline-offset: 2px;
+        }
+
+        .open-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Navigation - Bottom Bar for Mobile */
+        #main-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(11, 11, 14, 0.98);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 0.5rem 0.75rem;
+            padding-bottom: calc(0.5rem + var(--safe-bottom));
+            z-index: 100;
+            transform: translateY(100%);
+            transition: transform 0.4s ease;
+            border-top: 1px solid var(--bg-light);
+        }
+
+        #main-nav.visible {
+            transform: translateY(0);
+        }
+
+        .nav-inner {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 0.25rem;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 0.25rem;
+            list-style: none;
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .nav-links li {
+            flex: 1;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: clamp(0.65rem, 2.5vw, 0.75rem);
+            padding: 0.5rem 0.25rem;
+            border-radius: 8px;
+            transition: color 0.3s ease, background 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            min-height: var(--tap-min);
+            justify-content: center;
+            text-align: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:focus {
+            color: var(--accent-purple);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .nav-links a:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: -2px;
+        }
+
+        .nav-links a svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        /* Main Content */
+        #main-content {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.6s ease 0.3s, visibility 0.6s ease 0.3s;
+            padding-bottom: calc(80px + var(--safe-bottom));
+        }
+
+        #main-content.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .section {
+            min-height: 100vh;
+            min-height: 100dvh;
+            padding: clamp(1.5rem, 5vw, 4rem) clamp(1rem, 4vw, 2rem);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-family: var(--font-script);
+            font-size: clamp(2rem, 7vw, 3.5rem);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .section-subtitle {
+            font-family: var(--font-script);
+            font-size: clamp(1.5rem, 5vw, 1.8rem);
+            color: var(--accent-red);
+            margin: 2.5rem 0 1rem;
+            text-align: center;
+        }
+
+        .section-desc {
+            text-align: center;
+            color: var(--text-muted);
+            margin-bottom: 1.5rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+        }
+
+        /* Home Cards */
+        .home-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .home-card {
+            background: var(--bg-medium);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-decoration: none;
+            border: 1px solid var(--bg-light);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            min-height: var(--tap-min);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .home-card:hover,
+        .home-card:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+        }
+
+        .home-card:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .home-card h3 {
+            font-family: var(--font-script);
+            font-size: 1.5rem;
+            color: var(--accent-purple);
+            margin-bottom: 0.5rem;
+        }
+
+        .home-card p {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        /* Diary Container */
+        .diary-container {
+            max-width: 100%;
+            margin: 0 auto;
+            touch-action: pan-y pinch-zoom;
+        }
+
+        .diary-page {
+            background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
+            border-radius: 12px;
+            padding: clamp(1.25rem, 4vw, 2.5rem);
+            position: relative;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border-left: 3px solid var(--accent-purple);
+            display: none;
+            animation: fadeInPage 0.4s ease;
+        }
+
+        .diary-page.active {
+            display: block;
+        }
+
+        @keyframes fadeInPage {
+            from {
+                opacity: 0;
+                transform: translateX(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .diary-page::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple), var(--accent-red));
+            border-radius: 12px 12px 0 0;
+        }
+
+        .diary-text {
+            white-space: pre-wrap;
+            line-height: 1.9;
+            font-size: clamp(0.95rem, 3.5vw, 1.05rem);
+            color: var(--text-light);
+        }
+
+        .diary-nav {
+            display: flex;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .diary-btn {
+            background: var(--bg-light);
+            border: 1px solid var(--bg-light);
+            color: var(--text-light);
+            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            cursor: pointer;
+            font-family: var(--font-sans);
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            min-height: var(--tap-min);
+            min-width: 100px;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .diary-btn:hover:not(:disabled),
+        .diary-btn:focus:not(:disabled) {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+        }
+
+        .diary-btn:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        .diary-btn:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .diary-counter {
+            text-align: center;
+            color: var(--text-muted);
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            padding: 0.5rem;
+        }
+
+        .swipe-hint {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            opacity: 0.7;
+        }
+
+        /* Pinterest Grid - Single column on mobile */
+        .pinterest-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        @media (min-width: 500px) {
+            .pinterest-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+                gap: 1.25rem;
+            }
+        }
+
+        .pinterest-card {
+            background: var(--bg-medium);
+            border-radius: 14px;
+            padding: 1.25rem;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            border: 1px solid var(--bg-light);
+            position: relative;
+            overflow: hidden;
+            min-height: var(--tap-min);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .pinterest-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+        }
+
+        .pinterest-card:hover,
+        .pinterest-card:focus {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(139, 92, 246, 0.2);
+        }
+
+        .pinterest-card:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .pinterest-card:active {
+            transform: translateY(-2px);
+        }
+
+        .pinterest-card.locked {
+            opacity: 0.5;
+        }
+
+        .card-status {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            width: 24px;
+            height: 24px;
+        }
+
+        .card-status svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .pinterest-card.unlocked .card-status svg {
+            stroke: #22c55e;
+        }
+
+        .pinterest-card.locked .card-status svg {
+            stroke: var(--text-muted);
+        }
+
+        .card-title {
+            font-family: var(--font-script);
+            font-size: clamp(1.3rem, 4vw, 1.5rem);
+            color: var(--accent-purple);
+            margin-bottom: 0.5rem;
+            padding-right: 2rem;
+        }
+
+        .card-preview {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding: 0;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        @media (min-width: 600px) {
+            .modal-overlay {
+                align-items: center;
+                padding: 2rem;
+            }
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-dark);
+            border-radius: 20px 20px 0 0;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            max-height: 90dvh;
+            overflow-y: auto;
+            position: relative;
+            border: 1px solid var(--bg-light);
+            border-bottom: none;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            overscroll-behavior: contain;
+        }
+
+        @media (min-width: 600px) {
+            .modal-content {
+                border-radius: 20px;
+                border-bottom: 1px solid var(--bg-light);
+                max-height: 85vh;
+                transform: scale(0.95) translateY(20px);
+            }
+
+            .modal-overlay.active .modal-content {
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-handle {
+            width: 40px;
+            height: 4px;
+            background: var(--bg-light);
+            border-radius: 2px;
+            margin: 0.75rem auto;
+            display: block;
+        }
+
+        @media (min-width: 600px) {
+            .modal-handle {
+                display: none;
+            }
+        }
+
+        .modal-header {
+            padding: 0.5rem 1.25rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            background: var(--bg-dark);
+            z-index: 10;
+            border-bottom: 1px solid var(--bg-light);
+        }
+
+        .modal-title {
+            font-family: var(--font-script);
+            font-size: clamp(1.4rem, 5vw, 1.8rem);
+            color: var(--accent-purple);
+        }
+
+        .modal-close {
+            background: var(--bg-medium);
+            border: none;
+            color: var(--text-light);
+            cursor: pointer;
+            padding: 0.75rem;
+            border-radius: 50%;
+            transition: background 0.2s ease, color 0.2s ease;
+            min-width: var(--tap-min);
+            min-height: var(--tap-min);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .modal-close:hover,
+        .modal-close:focus {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        .modal-close:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        .modal-body {
+            padding: 1.5rem 1.25rem;
+            padding-bottom: calc(1.5rem + var(--safe-bottom));
+        }
+
+        .content-text {
+            white-space: pre-wrap;
+            line-height: 1.9;
+            font-size: clamp(0.95rem, 3.5vw, 1rem);
+            margin-bottom: 2rem;
+        }
+
+        .editable-section {
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--bg-light);
+        }
+
+        .editable-label {
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            color: var(--accent-purple);
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .editable-input {
+            width: 100%;
+            min-height: 120px;
+            background: var(--bg-medium);
+            border: 1px solid var(--bg-light);
+            border-radius: 12px;
+            padding: 1rem;
+            color: var(--text-light);
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            line-height: 1.7;
+            resize: vertical;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .editable-input:focus {
+            outline: none;
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+        }
+
+        .editable-input::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 1.5rem 0;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 16px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(180deg, var(--accent-blue), var(--accent-purple), var(--accent-red));
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-left: 50px;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-icon {
+            position: absolute;
+            left: 4px;
+            top: 0;
+            width: 26px;
+            height: 26px;
+            background: var(--bg-darkest);
+            border: 2px solid var(--accent-purple);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timeline-icon svg {
+            width: 12px;
+            height: 12px;
+            stroke: var(--accent-purple);
+        }
+
+        .timeline-content {
+            background: var(--bg-medium);
+            padding: 1.25rem;
+            border-radius: 14px;
+            border: 1px solid var(--bg-light);
+        }
+
+        .timeline-content p {
+            white-space: pre-wrap;
+            line-height: 1.8;
+            font-size: clamp(0.9rem, 3.5vw, 1rem);
+        }
+
+        .timeline-content.promise {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(37, 99, 235, 0.1));
+            border-color: var(--accent-purple);
+        }
+
+        .promise-title {
+            font-family: var(--font-script);
+            font-size: 1.3rem;
+            color: var(--accent-purple);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Final Message */
+        .final-message {
+            background: linear-gradient(135deg, var(--bg-medium), var(--bg-dark));
+            border-radius: 16px;
+            padding: clamp(1.5rem, 5vw, 3rem);
+            max-width: 100%;
+            margin: 0 auto;
+            position: relative;
+            border: 2px solid var(--accent-purple);
+        }
+
+        .final-message::before {
+            content: '';
+            position: absolute;
+            inset: -2px;
+            border-radius: 18px;
+            padding: 2px;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-purple), var(--accent-red));
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            pointer-events: none;
+        }
+
+        .final-message-text {
+            white-space: pre-wrap;
+            line-height: 2;
+            font-size: clamp(1rem, 3.5vw, 1.1rem);
+        }
+
+        .final-signature {
+            font-family: var(--font-script);
+            font-size: 1.5rem;
+            color: var(--accent-purple);
+            text-align: right;
+            margin-top: 2rem;
+        }
+
+        /* Back links */
+        .back-links {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 2.5rem;
+            align-items: center;
+        }
+
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            padding: 0.875rem 1.25rem;
+            border-radius: 10px;
+            transition: color 0.2s ease, background 0.2s ease;
+            min-height: var(--tap-min);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .back-link:hover,
+        .back-link:focus {
+            color: var(--accent-blue);
+            background: rgba(37, 99, 235, 0.1);
+        }
+
+        .back-link:focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        /* Unlock Banner */
+        .unlock-banner {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(139, 92, 246, 0.15));
+            border: 1px solid rgba(34, 197, 94, 0.4);
+            border-radius: 14px;
+            padding: 1.25rem;
+            margin: 1.5rem 0;
+            text-align: center;
+            display: none;
+        }
+
+        .unlock-banner.visible {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .unlock-banner p {
+            color: #22c55e;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Focus visible */
+        :focus-visible {
+            outline: 2px solid var(--accent-blue);
+            outline-offset: 2px;
+        }
+
+        /* Screen reader only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--bg-light);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent-purple);
+        }
+
+        /* Print */
+        @media print {
+            #main-nav { display: none; }
+            .section { min-height: auto; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Entry Screen -->
+    <div id="entry-screen" role="dialog" aria-label="Tela inicial - A Caixa">
+        <div class="box-container" id="open-box-btn" tabindex="0" role="button" aria-label="Abrir a caixa">
+            <h1 class="box-title">A Caixa</h1>
+            <div class="box-icon" aria-hidden="true">
+                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="15" y="45" width="70" height="45" rx="4" stroke="#8b5cf6" stroke-width="2" fill="none"/>
+                    <line x1="50" y1="45" x2="50" y2="90" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <rect x="15" y="60" width="70" height="8" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="1"/>
+                    <g class="box-lid">
+                        <rect x="10" y="35" width="80" height="15" rx="3" stroke="#2563eb" stroke-width="2" fill="none"/>
+                        <line x1="50" y1="35" x2="50" y2="50" stroke="#2563eb" stroke-width="1.5"/>
+                        <ellipse cx="42" cy="30" rx="10" ry="8" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                        <ellipse cx="58" cy="30" rx="10" ry="8" stroke="#ef4444" stroke-width="1.5" fill="none"/>
+                        <circle cx="50" cy="32" r="4" fill="#ef4444"/>
+                    </g>
+                </svg>
+            </div>
+            <p class="box-hint">Toque para abrir</p>
+            <button class="open-btn" type="button">Abrir caixa</button>
+        </div>
+    </div>
+
+    <!-- Navigation - Bottom Bar -->
+    <nav id="main-nav" role="navigation" aria-label="Menu principal">
+        <ul class="nav-links">
+            <li>
+                <a href="#inicio" aria-label="Início">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+                        <polyline points="9 22 9 12 15 12 15 22"/>
+                    </svg>
+                    <span>Início</span>
+                </a>
+            </li>
+            <li>
+                <a href="#cartas-textos" aria-label="Cartas e Textos">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span>Cartas</span>
+                </a>
+            </li>
+            <li>
+                <a href="#sobre-nos" aria-label="Sobre nós">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    <span>Sobre nós</span>
+                </a>
+            </li>
+            <li>
+                <a href="#mensagem-final" aria-label="Mensagem de 6 meses">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                    <span>6 meses</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <!-- Início -->
+        <section id="inicio" class="section" aria-labelledby="inicio-title">
+            <h2 id="inicio-title" class="section-title">Bem-vinda à nossa caixa</h2>
+            <p class="section-desc">
+                Esta caixa guarda palavras, memórias e sentimentos. Explore cada canto e descubra o que foi preparado com carinho para você.
+            </p>
+            <div class="home-grid">
+                <a href="#cartas-textos" class="home-card">
+                    <h3>Cartas & Textos</h3>
+                    <p>Palavras guardadas e novas dedicatórias</p>
+                </a>
+                <a href="#sobre-nos" class="home-card">
+                    <h3>Sobre nós</h3>
+                    <p>Nossa história em palavras</p>
+                </a>
+                <a href="#mensagem-final" class="home-card">
+                    <h3>Mensagem de 6 meses</h3>
+                    <p>Uma carta especial para este marco</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Cartas & Textos -->
+        <section id="cartas-textos" class="section" aria-labelledby="cartas-title">
+            <h2 id="cartas-title" class="section-title">Cartas & Textos</h2>
+
+            <!-- Galeria Dedicada -->
+            <h3 class="section-subtitle" id="galeria-dedicada">Galeria dedicada</h3>
+            <p class="section-desc">Textos antigos, como páginas de um diário</p>
+            
+            <div class="diary-container" role="region" aria-label="Galeria de textos antigos" id="diary-container">
+                <div id="diary-pages"></div>
+                <nav class="diary-nav" aria-label="Navegação das páginas">
+                    <button class="diary-btn" id="prev-page" aria-label="Página anterior" type="button">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M15 18l-6-6 6-6"/>
+                        </svg>
+                        Anterior
+                    </button>
+                    <button class="diary-btn" id="next-page" aria-label="Próxima página" type="button">
+                        Próximo
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                            <path d="M9 18l6-6-6-6"/>
+                        </svg>
+                    </button>
+                </nav>
+                <p class="diary-counter" id="diary-counter" aria-live="polite"></p>
+                <p class="swipe-hint" aria-hidden="true">Deslize para navegar</p>
+            </div>
+
+            <!-- Galeria para dedicar -->
+            <h3 class="section-subtitle" id="galeria-dedicar">Galeria para dedicar</h3>
+            <p class="section-desc">Novos textos — toque para revelar</p>
+
+            <div class="pinterest-grid" id="new-cards-grid">
+                <div class="pinterest-card" tabindex="0" role="button" aria-label="Abrir: Conforto no Caos" data-card="texto">
+                    <h4 class="card-title">Conforto no Caos</h4>
+                    <p class="card-preview">Um texto sobre nós, sobre o futuro...</p>
+                </div>
+                <div class="pinterest-card" tabindex="0" role="button" aria-label="Abrir: Poema" data-card="poema">
+                    <h4 class="card-title">Versos</h4>
+                    <p class="card-preview">Versos que traduzem o que sinto...</p>
+                </div>
+                <div class="pinterest-card locked" tabindex="0" role="button" aria-label="Carta especial de 6 meses" data-card="recompensa" id="recompensa-card">
+                    <span class="card-status" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </span>
+                    <h4 class="card-title">Carta de 6 meses</h4>
+                    <p class="card-preview">Carta especial — desbloqueie lendo os textos anteriores</p>
+                </div>
+            </div>
+
+            <div class="unlock-banner" id="unlock-banner" role="status">
+                <p>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                    </svg>
+                    Parabéns! Você desbloqueou a carta de 6 meses!
+                </p>
+            </div>
+
+            <div class="back-links">
+                <a href="#inicio" class="back-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 15l-6-6-6 6"/>
+                    </svg>
+                    Voltar ao início
+                </a>
+            </div>
+        </section>
+
+        <!-- Sobre Nós -->
+        <section id="sobre-nos" class="section" aria-labelledby="sobre-title">
+            <h2 id="sobre-title" class="section-title">Sobre nós</h2>
+            <p class="section-desc">Nossa história, contada em momentos</p>
+
+            <div class="timeline" role="list" aria-label="Linha do tempo">
+                <article class="timeline-item" role="listitem">
+                    <div class="timeline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <p>Bom, cá estamos novamente. Dois meses já. E mesmo com tudo que rolou, ainda faz sentido comemorar. Não porque foi tudo perfeito — longe disso — mas justamente porque, apesar das instabilidades, dos momentos confusos, das palavras não ditas ou mal ditas, a gente ainda tá aqui. Juntos.
+
+Esse pode ter sido nosso mês mais estranho até agora. Meio quebrado, meio distante, às vezes bom, às vezes cansativo. Mas ainda assim, é nosso. Não quero que essas fases apaguem o que tem de belo entre nós, porque mesmo imerso ao caos, ainda tem verdade, tem carinho, tem vontade de fazer dar certo. Tem presença, mesmo quando pareça faltar.
+
+Eu sei que já errei algumas vezes. E pode ser que eu continue errando, não por querer, mas pelo fato de eu não conseguir ser certeiro em absolutamente tudo. Mas nunca foi por descaso ou falta de sentimento. Se em algum momento te machuquei, te deixei confusa ou irritada, só posso pedir desculpa por isso. Quero ser algo leve, bom, mesmo nos dias pesados.
+
+Ainda quero ser teu namorado. Ainda quero te fazer sorrir, mesmo que seja em meio ao caos. Ainda quero construir algo contigo, mesmo que aos poucos, mesmo que a gente se perca um pouco no caminho às vezes. E se pra isso eu tiver que me adequar a parâmetros superiores, me entender melhor, conversar mais, então é isso que eu vou fazer. Porque, por mais óbvio que soe, tu ainda vale esse esforço, coisa rara de se ter de mim.
+
+Enfim, feliz 0.2 meses pra nós. Que venham mais dias, com menos ruído entre a gente, com mais presença, com mais nós.
+
+Eu te amo minha garota</p>
+                    </div>
+                </article>
+
+                <article class="timeline-item" role="listitem">
+                    <div class="timeline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <p>Eu não consegui encontrar</p>
+                    </div>
+                </article>
+
+                <article class="timeline-item" role="listitem">
+                    <div class="timeline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                            <path d="M2 17l10 5 10-5"/>
+                            <path d="M2 12l10 5 10-5"/>
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <p>Eu não consegui encontrar</p>
+                    </div>
+                </article>
+
+                <article class="timeline-item" role="listitem">
+                    <div class="timeline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </div>
+                    <div class="timeline-content">
+                        <p>Bom, primeiro, queria dizer que não esqueci do nosso dia — era tudo uma surpresa. Mandei esse texto nesse horário por pura vontade mesmo, não foi com má intenção; foi só pra sair um pouco da rotina, pra mudar as coisas, pra não ser sempre o mesmo. Quis te surpreender de um jeito diferente, porque tu merece o melhor de mim, mesmo nas pequenas coisas.
+
+Quero que tu saiba que, mesmo com as brigas, os desentendimentos e os dias mais pesados deste mês, eu continuo aqui — fiel a nós, fiel ao que a gente construiu. Nada mudou dentro de mim, nem por um segundo. Eu continuo querendo te ter por perto, querendo teu abraço, tua risada, tua presença. Às vezes, mesmo no silêncio, quando parece que estamos longe, eu ainda sinto como se tu estivesse comigo. E é nessas horas que eu percebo o quanto eu te amo.
+
+Quero te pedir desculpas por tudo — por cada falha, por cada palavra mal colocada, por cada ausência minha. Eu sei que não sou perfeito e que, às vezes, deixo o caos tomar conta, mas nunca quis te colocar dentro dele. Só que, mesmo no meio da bagunça, o meu sentimento por ti continua sendo o que mais faz sentido.
+
+Desculpa também se, em algum momento, eu não fui o que tu esperava. Se te magoei, se fui distante ou frio, pode me dizer. Eu quero ouvir, quero entender, quero ser melhor pra ti. Porque, pra mim, tu é alguém que vale o esforço, vale o tempo, vale cada tentativa.
+
+Feliz 0.5 para nós, eu te amo muito Ádria, eu te amo muito meu amor.</p>
+                    </div>
+                </article>
+
+                <article class="timeline-item" role="listitem">
+                    <div class="timeline-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </div>
+                    <div class="timeline-content promise">
+                        <p class="promise-title">Mini promessa de futuro</p>
+                        <p>Se você estiver disposta a ficar ao meu lado em todos os momentos, até nos piores, eu te darei o mundo — em flores, em gestos, em atitudes, em momentos e em verdade.</p>
+                    </div>
+                </article>
+            </div>
+
+            <div class="back-links">
+                <a href="#inicio" class="back-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 15l-6-6-6 6"/>
+                    </svg>
+                    Voltar ao início
+                </a>
+            </div>
+        </section>
+
+        <!-- Mensagem Final -->
+        <section id="mensagem-final" class="section" aria-labelledby="final-title">
+            <h2 id="final-title" class="section-title">Mensagem de 6 meses</h2>
+            <p class="section-desc">Uma carta especial para este marco</p>
+
+            <div class="final-message">
+                <p class="final-message-text">Bom, 0.6 meses, né? Meses surpreendentes. Nós nos afastamos, terminamos, nos reaproximamos de novo.
+
+E nesses 6 meses eu aprendi muita coisa contigo. Aprendi a te amar de novo, aprendi a querer evoluir — dessa vez não só por mim, mas por ti também, para não te machucar.
+
+Metade de um ano, e eu não me arrependo de estar contigo, mesmo depois das brigas, discussões e tudo mais.
+
+Eu te amo muito e não consigo evitar isso. Quero te beijar, quero te abraçar e te quero ao meu lado. Tu és a pessoa que me traz paz, o meu ponto de paz.
+
+Eu não consigo nem ao menos pensar em te largar, pensar em deixar outra pessoa te tocar, te abraçar, te beijar. Tu estiveste comigo nos momentos em que apenas eu mesmo saberia lidar comigo — e, mesmo que não tenhas feito nada específico, tu estavas lá, e isso já foi de grande ajuda.
+
+Tu me conquistaste antes mesmo de eu te beijar, antes de eu te abraçar, antes de tudo. Antes até mesmo de eu ter me apaixonado por ti.
+
+Eu te amo muito, Ádria. Feliz 0.6 meses para nós, minha garota.</p>
+                <p class="final-signature">Com todo meu amor</p>
+            </div>
+
+            <div class="back-links">
+                <a href="#cartas-textos" class="back-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    Voltar para Cartas & Textos
+                </a>
+                <a href="#inicio" class="back-link">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 15l-6-6-6 6"/>
+                    </svg>
+                    Voltar ao início
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-content" id="modal-content">
+            <span class="modal-handle" aria-hidden="true"></span>
+            <header class="modal-header">
+                <h3 class="modal-title" id="modal-title"></h3>
+                <button class="modal-close" aria-label="Fechar" type="button">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                        <path d="M18 6L6 18M6 6l12 12"/>
+                    </svg>
+                </button>
+            </header>
+            <div class="modal-body" id="modal-body"></div>
+        </div>
+    </div>
+
+    <script>
+        // Remove emojis function
+        function removeEmojis(str) {
+            return str.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F1E0}-\u{1F1FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{231A}-\u{231B}\u{23E9}-\u{23F3}\u{23F8}-\u{23FA}\u{25AA}-\u{25AB}\u{25B6}\u{25C0}\u{25FB}-\u{25FE}\u{2614}-\u{2615}\u{2648}-\u{2653}\u{267F}\u{2693}\u{26A1}\u{26AA}-\u{26AB}\u{26BD}-\u{26BE}\u{26C4}-\u{26C5}\u{26CE}\u{26D4}\u{26EA}\u{26F2}-\u{26F3}\u{26F5}\u{26FA}\u{26FD}\u{2702}\u{2705}\u{2708}-\u{270D}\u{270F}\u{2712}\u{2714}\u{2716}\u{271D}\u{2721}\u{2728}\u{2733}-\u{2734}\u{2744}\u{2747}\u{274C}\u{274E}\u{2753}-\u{2755}\u{2757}\u{2763}-\u{2764}\u{2795}-\u{2797}\u{27A1}\u{27B0}\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{2B1B}-\u{2B1C}\u{2B50}\u{2B55}\u{3030}\u{303D}\u{3297}\u{3299}]/gu, '').trim();
+        }
+
+        // Data - Diary texts with proper Portuguese diacritics
+        const diaryTexts = [
+            `De todos os sons que existem no mundo, a tua risada ocupa o primeiro lugar. Acima de qualquer melodia, acima até mesmo do som da chuva… nada me encanta tanto quanto o som do teu riso. É ele, sem dúvida, meu favorito.`,
+            
+            `Garota, tu és incrível e eu amo isso em ti. Tens uma leveza que conforta e uma presença que marca — isso é perfeito. És tão incrível quanto meu sabor favorito de energético, tão incrível que nem consigo mensurar.
+Eu amo amar você, e queria dizer que, se depender de mim, faria tudo por ti.
+Em meio a tantas pessoas, foste a única que ganhou meu coração, a única que me fez apaixonar, que despertou em mim esse lado que eu nem lembrava que existia.
+Tu foste quem me fez quebrar a promessa de não me apaixonar este ano.
+É, garota… tu me conquistaste.`,
+            
+            `Como a obra de arte mais linda que vi,
+Teus olhos despertam minha atenção,
+Curioso, me perco ali,
+Num mar castanho de imensa paixão.
+
+Como se guardassem o pôr do sol inteiro,
+Teus olhos têm um brilho sem igual,
+Misteriosos, doces, verdadeiros,
+Guardam um universo tão natural.
+
+Hipnotizantes, vivos, encantados,
+Teus olhos brilham como o amanhecer,
+Tão castanhos, tão bem desenhados,
+Que me fazem, sem querer, te escrever.`,
+            
+            `Teus cachos têm vida, têm cor,
+Espirais que me fazem sorrir,
+São leves, cheios de calor,
+E me fazem querer te seguir.
+
+Me perco no jeito que caem,
+Livres dançam na imensidão,
+São como ondas num mar calmo,
+Me puxando para sua direção.
+
+Amo cada cacho que vejo,
+Cada fio carrega carinho,
+Tu és alguém que eu tanto prezo,
+E amar-te é meu caminho.`,
+            
+            `Um aroma doce e tão profundo,
+Traz memórias da minha infância,
+Mistura tempo e significância,
+E acende um brilho no mundo.
+
+Sutil perfume que vem e some,
+Mas quando chega, muda o dia,
+Me embriaga em calmaria,
+E sem palavras, tudo consome.
+
+Lembrança viva, cheiro seguro,
+Presente que o tempo me oferece,
+No ar, meu pensamento adormece,
+E me faz sonhar com o futuro.`,
+            
+            `Nada soa como teu riso,
+Doce som que vem me tocar,
+Mais forte que o mar a cantar,
+É música que me faz sorrir.
+
+Nem chuva, nem canção que entoa,
+Tem o poder de me envolver,
+Tua risada faz renascer
+Um brilho que em mim ressoa.
+
+No som que acalma o espírito,
+Que invade todo meu ser,
+No riso teu eu quero me perder,
+Meu favorito.`,
+            
+            `Amo tua essência, tão perto da minha,
+Teu jeito estressado, que só me diverte,
+Na tua zoeira, minha alma se acerte,
+E faz do meu dia a melhor companhia.
+
+Brincar contigo, tirar risos no meio da zoeira,
+É sentir a alegria que só tu sabe dar,
+Sabendo que logo vais me provocar,
+Nessa troca louca, leve e verdadeira.
+
+Teu jeito é único, difícil de não amar,
+Simples e forte, me prende demais,
+No jeito que és, tudo se faz,
+E eu só sei que não quero te largar.`,
+            
+            `Desde aquela quarta, nunca mais foi igual,
+Teus abraços viraram meu lugar,
+Me fazem sorrir, me fazem parar,
+Têm algo neles que me faz tão bem, real.
+
+É fácil gostar do jeito que me envolve,
+Parece que o mundo fica leve,
+Cada abraço teu é o que me serve,
+É onde tudo em mim se resolve.
+
+Eu amo te abraçar de verdade,
+Não tem como não sentir isso,
+É mais que toque, é compromisso,
+Teu abraço me traz felicidade.`,
+            
+            `Seu sorriso, tão lindo de admirar,
+Impossível não amar, tão brilhante,
+Tão cativante, gesto tão marcante,
+Incrível luz que me faz sonhar.
+
+Viciante é o sorriso a me conquistar,
+Com um simples gesto, faz meu peito disparar,
+Hipnotizante, acalma meu olhar,
+Me envolve e não deixa escapar.
+
+Quem negaria gostar de tal sorriso?
+Jamais imaginaria viver sem ele,
+Nunca cogitaria um mundo tão cruel,
+Pois seu sorriso é meu paraíso.`,
+            
+            `Teus beijos doces me fazem sonhar,
+E o mundo parece se iluminar,
+No toque suave, começo a amar,
+Um desejo que não quer cessar.
+
+Ao mesmo tempo que me deixam afim,
+Assim que teus lábios se afastam de mim,
+Uma dor nasce ali, no fim,
+Que só em teus beijos encontra fim.
+
+No fim, confesso que é verdade,
+Que amar-te é meu doce vício,
+Não nego o que há na saudade,
+No amor, no beijo, no benefício.`,
+            
+            `Nossa… você me ganhou ainda mais com essa sua voz. De verdade, me derreteu completamente e só me fez ter ainda mais vontade de, no futuro, poder acordar com ela ali, pertinho de mim. Sempre fui detalhista com tudo, reparo em cada coisa… mas na sua voz? Não consigo encontrar um defeito sequer. Com sono ou sem sono, eu amo ela de qualquer jeito.
+Confesso que… se for pra escolher, eu ainda prefiro sua voz com sono. Tem uma melodia diferente, um tom mais leve… é perfeita. Eu amo isso. É uma sensação tão boa, tão única… que nem sei como descrever direito. Só sei que foi muito, muito bom.
+Não consigo – nem por brincadeira – cogitar dizer que odeio sua voz. Impossível. Seria a maior mentira que eu poderia contar. Porque a verdade é que eu amo sua voz. De um jeito que só aumenta cada vez que te escuto.`,
+            
+            `Apenas em uma tentativa de te escrever outro poema, nada de importante, nem uma data nem nada, apenas mostrando que eu te amo.
+
+"Tenho planos traçados no silêncio,
+Sonhos que guardo só pra nós dois.
+Presentes que o tempo embala devagar,
+Mas que, um dia, chegarão em tuas mãos.
+
+Mesmo sem sempre saber demonstrar,
+Mesmo distante ou calado demais,
+Meu desejo é estar ao teu lado,
+Mesmo quando pareço longe, fico mais.
+
+A distância não fere como antes,
+Mas tua ausência pesa no ar.
+No frio da solitude que tanto abraço,
+É teu calor que venho buscar.
+
+Sinto falta do teu toque, do teu carinho,
+Do beijo que queima e me faz derreter.
+Do abraço que cola os cacos que restam
+E me faz, por instantes, renascer.
+
+Longe de ti, te desejo em silêncio.
+Perto, quero cada gesto, cada olhar.
+Quero que saiba que quando te tenho,
+É ali que o mundo para de girar.
+
+Quero o beijo que me tira o fôlego,
+O abraço que me prende no tempo.
+Que sela cada rachadura minha
+E cura o que há dentro do tormento.
+
+Nada disso é exagero, é verdade crua.
+É amor que transborda e escorre de mim.
+Eu te amo demais, Ádria, minha lua,
+E é só contigo que quero chegar ao fim."`,
+            
+            `Não cogitaria que escreveria um texto assim pra você, mas aqui estou. 
+Nem sei direito por onde começar, porque eu não costumo falar sobre. Não sou do tipo que comenta corpo e tal. Mas, contigo, é diferente. Quando paro pra reparar em ti (vale ressaltar que eu tento evitar) é surreal. Na moral. Algo tão belo, tão único, que me tira do chão. É como se, por alguns segundos, eu esquecesse tudo. 
+Se teu corpo fosse um oceano, eu me jogaria sem pensar duas vezes, mesmo sabendo que me afogaria. E ainda assim, sorriria enquanto afundo.
+Tem uma força em ti que vai além do físico. Me atrai de um jeito que nem sei explicar. Teu corpo não só chama atenção, ele me hipnotiza. Prende o olhar, desvia o foco, ocupa os pensamentos. E não, não é sobre objetificar, passo até longe disso. É sobre contemplar. É sobre ficar em silêncio, notando cada detalhe como quem observa arte. Mesmo sem querer, em algum momento, meus olhos sempre vão te procurar. E sempre encontram. No teu jeito de andar, no cabelo. Tudo em ti chama. 
+Às vezes, me pego olhando sem perceber, como se meu corpo já soubesse que é pra olhar, que é ali que algo me toca. É quase automático. Um gesto simples teu, um sorriso. 
+Tem algo em ti que é difícil de ignorar. Que me puxa pra perto, mesmo quando tu não diz nada. E eu, mesmo tentando disfarçar, fico ali, parado, preso, admirando.
+É tão lindo que se eu tentasse descrever com palavras, seria como um sonho surrealista. Tentando lembrar ao acordar, mas só conseguindo sentir. E tudo bem não entender. Às vezes, eu não precisa entender pra sentir. E eu sinto. Sinto muito. Demais até.
+
+Aqui vai um poema, só porque eu estava com criatividade o suficiente, ia ser só o texto kkkkkkkkk
+
+Se teu corpo fosse um imenso mar,
+Me lançaria sem medo algum,
+Mesmo certo de que iria afundar,
+Mergulharia até o fim comum.
+
+Afogaria-me no teu calor,
+Na maré que tua pele carrega,
+Mesmo a dor virando sabor,
+Mesmo a alma ficando cega.
+
+Cada onda tua me consome,
+Teus traços, correntes sem fim,
+E mesmo se a razão me some,
+Aceitaria teu caos em mim.
+
+Sorriria ao ver-me submerso,
+Em ti, meu destino selado,
+Pois entre o mundo tão diverso,
+És meu naufrágio mais amado.`,
+            
+            `(O que mais doeu...)
+
+Como posso chamar de amizade aquilo que já foi um universo inteiro?
+Dividimos dores como quem divide a própria pele,
+compartilhamos sonhos como quem constrói um destino,
+trocamos desejos como quem respira o mesmo ar.
+
+O que éramos não cabe na palavra "amigos".
+Amigos não carregam cicatrizes de um amor que queimou.
+Amigos não se lembram do gosto de um beijo perdido.
+Amigos não choram pela ausência de algo que já foi tudo.
+
+Como voltar ao começo,
+se o começo já não existe mais?
+O que tivemos está gravado, não pode ser reescrito.
+E mesmo que tentemos apagar,
+há sempre um rastro, um silêncio, um eco do que fomos.
+
+Talvez possamos fingir normalidade,
+mas no fundo sabemos:
+o "nós" nunca voltará a ser apenas amizade.`,
+            
+            `Cara, eu realmente tento me controlar, me conter bastante. Não consigo. Mesmo que eu fale muitas coisas, seja o mais obsceno que eu possa ser – pelo menos com a gente na rua –, eu também não estou com você só por isso.
+Cara, EU TE AMO PRA CARALHO. Beijar você é imensamente bom, transcendentalmente surreal. Eu quero me controlar, mas toda vez que eu te beijo, eu não consigo mais focar em outra coisa a não ser você. Eu me perco em você, nos seus beijos, nas suas carícias. E mesmo que eu tente demais, eu não vou resistir. Eu vou ceder à tentação de te beijar, de te encostar em algum lugar e ficar te beijando.
+Quero te fazer lembrar que cada beijo é uma afirmação do quanto eu te amo, de que você é minha assim como eu sou seu. Uma afirmação do que eu sinto entre nós dois.
+Mesmo que eu seja insanamente safado, de verdade, eu ainda preferiria ficar te beijando loucamente, igual hoje. Valeria mais do que te tocar, mais do que uma transa. Eu te curto, te almejo, quero te ver bem, quero te fazer bem, quero que você seja o seu melhor — não apenas no relacionamento, mas também na vida.
+Quero que, assim como eu, você almeje o mundo. E não falei que você me lembra "Where Have You Been" à toa. Não, eu realmente me questiono sobre isso e não consigo nem ao menos cogitar ficar sem você novamente.
+Você é o que me mantém vivo, o meu tesão por viver. É quem eu quero ao meu lado, mesmo se brigarmos, pra tentar a reconciliação.
+Mesmo que eu ache o teu corpo abissalmente espetacular, fenomenal, incrível, perfeito, sublime, fabuloso, hipnotizante, próximo da perfeição — e que, pra ele, eu tenha feito não apenas aquele poema, mas outros —, mesmo que meu corpo reaja inevitável e intensamente, de forma que eu me perca em cada curva, em cada fresta, em cada pequeno pedaço do paraíso, e que eu não hesite em continuar explorando, ainda assim eu não a tocaria se isso a deixasse incomodada.
+E vou tentar realmente me conter, pelo menos em partes — você sabe que o beijo eu não vou resistir, ele eu não vou e nem quero —, e tentar te deixar o mais confortável possível enquanto estiver comigo.
+E mesmo que você me bata, me arranhe, me morda, não faz diferença pra mim. Meu corpo se recupera, e eu não ligo sobre isso — arrisco dizer que até gosto. Confesso que também gosto dessa sua personalidade — como diria você, mais solta. Sabemos que o texto é meu, e eu vou te chamar de safada na cara dura mesmo — safada, que teoricamente me completa, e eu não hesitaria em me perder junto a essa versão sua, que por mim eu consumiria você por inteira.
+Eu falaria tantas outras coisas, mas deixo pra te falar pessoalmente, é melhor. Mas sei que talvez um espelho seja uma excelente ideia, uma bancada também, você com as mãos atrás da costa, talvez atrás da cabeça, pernas abertas e… é, nada não, eu acabei me perdendo. Mas imagina a gente igual no sonho — de madrugada, luzes apagadas… um sonho, realmente. 
+Quero tocar você e sentir cada reação do seu corpo. Quero sentir seu corpo junto ao meu — cada curva, cada arrepio, cada suspiro que você solta. Quero explorar você, sentir sua pele, seu cheiro, seu calor. Que cada toque meu te faça estremecer, que cada pressão, cada arranhão, cada aperto seja lembrado. Queria dizer que sua respiração acelerada e até mesmo os possíveis gemidos — que confesso abertamente que gostaria de ouvir —, cada reação que você possa ter, é o meu guia. Não por pura carne, mas pelo vício de sentir o que só você desperta em mim.
+É incrível… não consigo tirar você da cabeça. Te vejo em sonhos, lembro de você até nas músicas. Tudo me faz voltar ao início, a você, a nós. E eu queria te dizer que te amo muito. Se eu tiver perdido um pouco a mão nesse texto, me perdoe.
+
+Teu corpo me chama,
+me provoca, me prende.
+O calor da tua pele encosta na minha
+e tudo em mim desperta.
+
+Teus lábios são convite,
+tua respiração me guia.
+Cada toque é um incêndio,
+e eu quero me queimar inteiro.
+
+Minhas mãos te procuram no escuro,
+como se o mundo acabasse ali.
+Tua pele arrepia,
+teu som me enlouquece.
+
+Não há espaço pra pensar,
+só pra sentir —
+o roçar, o puxar, o perder o fôlego,
+o desejar sem medida.
+
+Quero te ter,
+te sentir tremendo entre meus dedos,
+gravar meu nome no teu corpo,
+no calor, no arrepio, no gemido contido.
+
+E quando o silêncio vier,
+que ele traga o cansaço bom,
+a pele quente, o coração em disparo,
+e a certeza de que te quis por inteiro.`,
+            
+            `Entre teus lábios eu quero me perder,
+teu corpo em brasa me chama e me envolve,
+num riso leve teu desejo se move,
+e eu só penso em te beijar pra te prender.
+
+Teu toque acende tudo que há em mim,
+cada parte tua eu quero conhecer,
+cada imperfeição eu quero perceber,
+te calar com um beijo que te tome assim.
+
+Te apertar forte contra a parede,
+sentir tua boca tão perto, ar a tremer,
+te beijar lento, depois te devorar sem medo,
+pois esse desejo em mim não sabe ceder.`,
+            
+            `Não consigo te apagar. Tu gruda na minha mente,
+teus beijos me viciam, me prendem, me chamam sempre.
+Ninguém te tem, ninguém vai te tocar, ninguém te merece além de mim.
+E se alguém ousar, nem sou capaz de pensar no que faria.
+
+Perco o dia, perco o foco, perco tudo — e não reclamo.
+Só quero teu corpo quente ancorado no meu, teu cheiro preso na minha pele.
+Tu é minha, inteira, de alma, de impulso, de verdade.
+Eu te possuo na mesma medida em que tu me desarma.
+
+Nenhuma outra me tem.
+E se tu olhar alguém por mais de um segundo, puxarei-te de volta,
+te trarei pras sombras,
+te tomarei pra mim de um jeito para que nunca esqueça.
+
+Quero te beijar até tua respiração tremer,
+morder tua pele pra que o mundo saiba onde tu pertence,
+te prensar contra a parede só pra ouvir teu suspiro,
+te tomar nos braços com uma fome que ninguém mais desperta.
+
+Te explorar com calma,
+deixar-te vazia de tudo, cheia só de mim,
+marcar tua pele com meu toque, meu desejo.
+Ninguém vai te tocar: tu és minha chama, meu vício, meu tormento bom.
+
+Mesmo que seja no teu tempo, devagar, quando você quiser,
+nenhum outro homem te tocará,
+só eu,
+só minhas mãos, só minha boca, só minha marca em você.
+
+Quero te levar ao limite só pra te ver perder o controle,
+te fazer tremer,
+te carregar quando tu já não aguenta teu próprio corpo,
+e te guardar nos meus braços como se o mundo fosse te roubar.
+
+Queimaremos juntos numa febre que só existe entre nós dois,
+uma força que ninguém entende, ninguém atravessa.
+Eu te amo Ádria, com ciúme, com intensidade.
+Tu é minha.`
+        ];
+
+        // New cards data
+        const newCardsData = {
+            texto: {
+                title: 'Conforto no Caos',
+                content: `Ádria, tem uma coisa que tá me deixando um pouco preocupado, e isso é você, eu, nós. Você sabe que eu gosto muito de ti, e eu já adianto que isso não é um término. Eu só quero conversar contigo pra gente não ficar mal. Você sabe o que eu tenho em mente e sabe o quão ambicioso eu sou por essa aprovação e o que estou disposto a sacrificar.
+
+Eu quero conversar contigo justamente sobre isso: nas nossas férias, eu praticamente não vou falar com você. Eu vou gastar todo o meu tempo estudando, e eu queria pedir desculpas por isso, inclusive. Talvez eu não supra suas expectativas em relação ao nosso relacionamento, mas queria dizer que dói pensar em ficar distante por tanto tempo — porém, vai ser necessário. Eu espero que você entenda isso.
+
+Aliás, você pode até usar esse tempo pra começar a estudar pro Enem de 2026. Eu vou te ajudar com isso. Mas eu não vou conseguir ser presente o tempo todo e, mesmo te amando, eu não vou sacrificar meu tempo de estudos pra ficar conversando por mensagem.
+
+O que eu tenho em mente é a gente marcar de sair sempre que a gente puder. Isso, de certo modo, vai ser algo pra tentar suprir esse afastamento que provavelmente vai existir entre a gente. Como já dito antes, eu não quero terminar com você e nem quero "um tempo", só quero esclarecer as coisas antes que elas se tornem um problema. Esse caos foi criado por mim, e eu não vou deixar ele acabar com o que a gente tem.
+
+Você sabe que eu te amo, e tudo que vou fazer vai ser por mim, por você, por nós.`
+            },
+            poema: {
+                title: 'Versos',
+                content: `Eu te amo como amo estudar — com vontade, com ambição.
+Eu te amo como amo correr — no impulso, no coração disparado.
+Eu te amo como amo ouvir música — sem cansaço, sem limite.
+Eu te amo como amo energético — viciante, necessário.
+
+Tua voz me atravessa como febre,
+teu rosto me prende como um eclipse,
+teu corpo me chama como incêndio,
+teu jeito me doma e me destrói ao mesmo tempo.
+
+Me joga ao abismo com um toque,
+me puxa de volta com um beijo,
+me afoga em desejo só pra me renascer,
+me queima em paixão só pra me reacender.`
+            },
+            recompensa: {
+                title: 'Carta de 6 meses',
+                content: `Bom, 0.6 meses, né? Meses surpreendentes. Nós nos afastamos, terminamos, nos reaproximamos de novo.
+
+E nesses 6 meses eu aprendi muita coisa contigo. Aprendi a te amar de novo, aprendi a querer evoluir — dessa vez não só por mim, mas por ti também, para não te machucar.
+
+Metade de um ano, e eu não me arrependo de estar contigo, mesmo depois das brigas, discussões e tudo mais.
+
+Eu te amo muito e não consigo evitar isso. Quero te beijar, quero te abraçar e te quero ao meu lado. Tu és a pessoa que me traz paz, o meu ponto de paz.
+
+Eu não consigo nem ao menos pensar em te largar, pensar em deixar outra pessoa te tocar, te abraçar, te beijar. Tu estiveste comigo nos momentos em que apenas eu mesmo saberia lidar comigo — e, mesmo que não tenhas feito nada específico, tu estavas lá, e isso já foi de grande ajuda.
+
+Tu me conquistaste antes mesmo de eu te beijar, antes de eu te abraçar, antes de tudo. Antes até mesmo de eu ter me apaixonado por ti.
+
+Eu te amo muito, Ádria. Feliz 0.6 meses para nós, minha garota.`
+            }
+        };
+
+        // State
+        let currentDiaryPage = 0;
+        let openedCards = { texto: false, poema: false };
+        let focusedElementBeforeModal = null;
+
+        // DOM Elements
+        const entryScreen = document.getElementById('entry-screen');
+        const openBoxBtn = document.getElementById('open-box-btn');
+        const mainNav = document.getElementById('main-nav');
+        const mainContent = document.getElementById('main-content');
+        const diaryContainer = document.getElementById('diary-container');
+        const diaryPagesContainer = document.getElementById('diary-pages');
+        const prevPageBtn = document.getElementById('prev-page');
+        const nextPageBtn = document.getElementById('next-page');
+        const diaryCounter = document.getElementById('diary-counter');
+        const modal = document.getElementById('modal');
+        const modalContent = document.getElementById('modal-content');
+        const modalTitle = document.getElementById('modal-title');
+        const modalBody = document.getElementById('modal-body');
+        const modalClose = document.querySelector('.modal-close');
+        const recompensaCard = document.getElementById('recompensa-card');
+        const unlockBanner = document.getElementById('unlock-banner');
+
+        // Initialize
+        function init() {
+            loadState();
+            renderDiaryPages();
+            setupEventListeners();
+            updateUnlockStatus();
+        }
+
+        function loadState() {
+            try {
+                openedCards.texto = localStorage.getItem('acaixa.opened.texto') === 'true';
+                openedCards.poema = localStorage.getItem('acaixa.opened.poema') === 'true';
+            } catch (e) {
+                console.warn('localStorage not available');
+            }
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem('acaixa.opened.texto', openedCards.texto);
+                localStorage.setItem('acaixa.opened.poema', openedCards.poema);
+                if (openedCards.texto && openedCards.poema) {
+                    localStorage.setItem('acaixa.unlocked.recompensa', 'true');
+                }
+            } catch (e) {
+                console.warn('localStorage not available');
+            }
+        }
+
+        function renderDiaryPages() {
+            diaryTexts.forEach((text, index) => {
+                const page = document.createElement('div');
+                page.className = `diary-page ${index === 0 ? 'active' : ''}`;
+                page.setAttribute('role', 'tabpanel');
+                page.setAttribute('aria-label', `Página ${index + 1} de ${diaryTexts.length}`);
+                page.innerHTML = `<p class="diary-text">${removeEmojis(text)}</p>`;
+                diaryPagesContainer.appendChild(page);
+            });
+            updateDiaryNav();
+        }
+
+        function updateDiaryNav() {
+            prevPageBtn.disabled = currentDiaryPage === 0;
+            nextPageBtn.disabled = currentDiaryPage === diaryTexts.length - 1;
+            diaryCounter.textContent = `${currentDiaryPage + 1} de ${diaryTexts.length}`;
+        }
+
+        function goToPage(index) {
+            if (index < 0 || index >= diaryTexts.length) return;
+            const pages = document.querySelectorAll('.diary-page');
+            pages.forEach((page, i) => {
+                page.classList.toggle('active', i === index);
+            });
+            currentDiaryPage = index;
+            updateDiaryNav();
+        }
+
+        function updateUnlockStatus() {
+            const isUnlocked = openedCards.texto && openedCards.poema;
+            recompensaCard.classList.toggle('locked', !isUnlocked);
+            recompensaCard.classList.toggle('unlocked', isUnlocked);
+            unlockBanner.classList.toggle('visible', isUnlocked);
+            
+            // Update card status icon
+            const statusIcon = recompensaCard.querySelector('.card-status');
+            if (isUnlocked) {
+                statusIcon.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"/>
+                </svg>`;
+            }
+        }
+
+        function openModal(cardType) {
+            const data = newCardsData[cardType];
+            if (!data) return;
+
+            // Check if locked
+            const isUnlocked = openedCards.texto && openedCards.poema;
+            if (cardType === 'recompensa' && !isUnlocked) {
+                return; // Don't open locked card
+            }
+
+            focusedElementBeforeModal = document.activeElement;
+            modalTitle.textContent = data.title;
+
+            let bodyContent = `<div class="content-text">${removeEmojis(data.content)}</div>`;
+
+            // Add editable sections for texto and poema
+            if (cardType !== 'recompensa') {
+                const savedDedicacao = getSavedValue(`acaixa.dedicacao.${cardType}`);
+                const savedMetafora = getSavedValue(`acaixa.metafora.${cardType}`);
+
+                bodyContent += `
+                    <div class="editable-section">
+                        <label class="editable-label" for="dedicacao-${cardType}">Mini-dedicação</label>
+                        <textarea class="editable-input" id="dedicacao-${cardType}" placeholder="Escreva sua mini-dedicação aqui..." data-key="acaixa.dedicacao.${cardType}">${savedDedicacao}</textarea>
+                    </div>
+                    <div class="editable-section">
+                        <label class="editable-label" for="metafora-${cardType}">Metáfora</label>
+                        <textarea class="editable-input" id="metafora-${cardType}" placeholder="Escreva sua metáfora sobre nós..." data-key="acaixa.metafora.${cardType}">${savedMetafora}</textarea>
+                    </div>
+                `;
+
+                // Mark as opened
+                openedCards[cardType] = true;
+                saveState();
+                updateUnlockStatus();
+            }
+
+            modalBody.innerHTML = bodyContent;
+
+            // Add save listeners for textareas
+            modalBody.querySelectorAll('.editable-input').forEach(textarea => {
+                textarea.addEventListener('input', () => {
+                    saveValue(textarea.dataset.key, textarea.value);
+                });
+            });
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            
+            // Focus management
+            setTimeout(() => {
+                modalClose.focus();
+            }, 100);
+
+            // Setup focus trap
+            setupFocusTrap();
+        }
+
+        function getSavedValue(key) {
+            try {
+                return localStorage.getItem(key) || '';
+            } catch (e) {
+                return '';
+            }
+        }
+
+        function saveValue(key, value) {
+            try {
+                localStorage.setItem(key, value);
+            } catch (e) {
+                console.warn('localStorage not available');
+            }
+        }
+
+        function closeModal() {
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            if (focusedElementBeforeModal) {
+                focusedElementBeforeModal.focus();
+            }
+        }
+
+        function setupFocusTrap() {
+            const focusableElements = modalContent.querySelectorAll(
+                'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+            );
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+
+            modalContent.addEventListener('keydown', function trapFocus(e) {
+                if (e.key !== 'Tab') return;
+
+                if (e.shiftKey) {
+                    if (document.activeElement === firstElement) {
+                        e.preventDefault();
+                        lastElement.focus();
+                    }
+                } else {
+                    if (document.activeElement === lastElement) {
+                        e.preventDefault();
+                        firstElement.focus();
+                    }
+                }
+            });
+        }
+
+        function setupEventListeners() {
+            // Open box
+            const handleOpenBox = () => openBox();
+            openBoxBtn.addEventListener('click', handleOpenBox);
+            openBoxBtn.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleOpenBox();
+                }
+            });
+
+            // Diary navigation
+            prevPageBtn.addEventListener('click', () => {
+                if (currentDiaryPage > 0) goToPage(currentDiaryPage - 1);
+            });
+
+            nextPageBtn.addEventListener('click', () => {
+                if (currentDiaryPage < diaryTexts.length - 1) goToPage(currentDiaryPage + 1);
+            });
+
+            // Touch swipe for diary
+            let touchStartX = 0;
+            let touchStartY = 0;
+            let touchEndX = 0;
+            let isSwiping = false;
+
+            diaryContainer.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+                isSwiping = true;
+            }, { passive: true });
+
+            diaryContainer.addEventListener('touchmove', (e) => {
+                if (!isSwiping) return;
+                const diffY = Math.abs(e.changedTouches[0].screenY - touchStartY);
+                const diffX = Math.abs(e.changedTouches[0].screenX - touchStartX);
+                // Cancel if vertical scroll
+                if (diffY > diffX) {
+                    isSwiping = false;
+                }
+            }, { passive: true });
+
+            diaryContainer.addEventListener('touchend', (e) => {
+                if (!isSwiping) return;
+                touchEndX = e.changedTouches[0].screenX;
+                const diff = touchStartX - touchEndX;
+                if (Math.abs(diff) > 60) {
+                    if (diff > 0 && currentDiaryPage < diaryTexts.length - 1) {
+                        goToPage(currentDiaryPage + 1);
+                    } else if (diff < 0 && currentDiaryPage > 0) {
+                        goToPage(currentDiaryPage - 1);
+                    }
+                }
+                isSwiping = false;
+            }, { passive: true });
+
+            // Pinterest cards
+            document.querySelectorAll('#new-cards-grid .pinterest-card').forEach(card => {
+                const handleCardClick = () => openModal(card.dataset.card);
+                card.addEventListener('click', handleCardClick);
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleCardClick();
+                    }
+                });
+            });
+
+            // Modal close
+            modalClose.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // Modal swipe down to close (mobile)
+            let modalTouchStartY = 0;
+            modalContent.addEventListener('touchstart', (e) => {
+                if (modalContent.scrollTop === 0) {
+                    modalTouchStartY = e.changedTouches[0].screenY;
+                }
+            }, { passive: true });
+
+            modalContent.addEventListener('touchend', (e) => {
+                const diff = e.changedTouches[0].screenY - modalTouchStartY;
+                if (diff > 100 && modalContent.scrollTop === 0) {
+                    closeModal();
+                }
+            }, { passive: true });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', (e) => {
+                if (modal.classList.contains('active')) {
+                    if (e.key === 'Escape') closeModal();
+                    return;
+                }
+
+                // Arrow keys for diary (when not in modal)
+                if (document.activeElement.tagName !== 'TEXTAREA' && document.activeElement.tagName !== 'INPUT') {
+                    if (e.key === 'ArrowLeft' && currentDiaryPage > 0) {
+                        goToPage(currentDiaryPage - 1);
+                    } else if (e.key === 'ArrowRight' && currentDiaryPage < diaryTexts.length - 1) {
+                        goToPage(currentDiaryPage + 1);
+                    }
+                }
+            });
+        }
+
+        function openBox() {
+            openBoxBtn.classList.add('opening');
+            
+            setTimeout(() => {
+                entryScreen.classList.add('hidden');
+                mainNav.classList.add('visible');
+                mainContent.classList.add('visible');
+                
+                // Focus first section for accessibility
+                document.getElementById('inicio').focus();
+            }, 600);
+        }
+
+        // Check for reduced motion preference
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        if (prefersReducedMotion) {
+            document.documentElement.style.setProperty('--transition-duration', '0.01ms');
+        }
+
+        // Init on DOM ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
